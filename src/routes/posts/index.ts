@@ -23,7 +23,8 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
         key: 'id',
         equals: id,
       });
-      return posts ? posts : reply.code(404);
+      if (!posts) throw reply.code(404);
+      return posts;
     }
   );
 
@@ -52,7 +53,7 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
       try {
         return await fastify.db.posts.delete(id);
       } catch (error) {
-        return reply.code(400);
+        throw reply.code(400);
       }
     }
   );
@@ -70,7 +71,7 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
       try {
         return await fastify.db.posts.change(id, request.body);
       } catch (error) {
-        return reply.code(400);
+        throw reply.code(400);
       }
     }
   );

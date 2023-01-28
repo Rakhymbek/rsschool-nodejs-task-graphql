@@ -25,7 +25,8 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
         key: 'id',
         equals: id,
       });
-      return memberTypes ? memberTypes : reply.code(404);
+      if (!memberTypes) throw reply.code(404);
+      return memberTypes;
     }
   );
 
@@ -42,7 +43,7 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
       try {
         return await fastify.db.memberTypes.change(id, request.body);
       } catch (error) {
-        return reply.code(400);
+        throw reply.code(400);
       }
     }
   );

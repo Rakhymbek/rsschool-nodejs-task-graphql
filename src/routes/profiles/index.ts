@@ -23,7 +23,8 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
         key: 'id',
         equals: id,
       });
-      return profile ? profile : reply.code(404);
+      if (!profile) throw reply.code(404);
+      return profile;
     }
   );
 
@@ -40,9 +41,13 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
         key: 'userId',
         equals: body.userId,
       });
-      if (profile) return reply.code(400);
+      if (body.memberTypeId !== 'basic' && body.memberTypeId !== 'business') {
+        throw reply.code(400);
+      }
+      if (profile) throw reply.code(400);
       const newProfile = await fastify.db.profiles.create(body);
-      return newProfile ? newProfile : reply.code(400);
+      if (newProfile) return newProfile;
+      else throw reply.code(400);
     }
   );
 
@@ -58,7 +63,7 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
       try {
         return await fastify.db.profiles.delete(id);
       } catch (error) {
-        return reply.code(400);
+        throw reply.code(400);
       }
     }
   );
@@ -76,7 +81,7 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
       try {
         return await fastify.db.profiles.change(id, request.body);
       } catch (error) {
-        return reply.code(400);
+        throw reply.code(400);
       }
     }
   );
