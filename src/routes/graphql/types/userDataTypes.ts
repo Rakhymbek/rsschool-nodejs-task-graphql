@@ -27,13 +27,13 @@ export const profileType = {
   userId: { type: GraphQLID },
 };
 
-export const profileDataType = {
+export const profileDataType = new GraphQLObjectType({
   name: 'Profile',
   fields: {
     id: { type: GraphQLID },
     ...profileType,
   },
-};
+});
 
 export const postType = {
   title: { type: GraphQLString },
@@ -41,23 +41,23 @@ export const postType = {
   userId: { type: GraphQLString },
 };
 
-export const postDataType = {
+export const postDataType = new GraphQLObjectType({
   name: 'Post',
   fields: {
     id: { type: GraphQLID },
-    ...profileType,
+    ...postType,
   },
-};
+});
 
 export const memberType = {
   discount: { type: GraphQLInt },
   monthPostsLimit: { type: GraphQLInt },
 };
 
-export const memberTypeDataType = {
+export const memberTypeDataType = new GraphQLObjectType({
   name: 'MemberType',
   fields: {
     id: { type: GraphQLString },
     ...memberType,
   },
-};
+});
