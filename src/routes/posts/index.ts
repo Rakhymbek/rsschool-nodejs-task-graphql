@@ -6,7 +6,9 @@ import type { PostEntity } from '../../utils/DB/entities/DBPosts';
 const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
   fastify
 ): Promise<void> => {
-  fastify.get('/', async function (request, reply): Promise<PostEntity[]> {});
+  fastify.get('/', async function (request, reply): Promise<PostEntity[]> {
+    return await fastify.db.posts.findMany();
+  });
 
   fastify.get(
     '/:id',
@@ -15,7 +17,15 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
         params: idParamSchema,
       },
     },
-    async function (request, reply): Promise<PostEntity> {}
+    async function (request, reply): Promise<PostEntity> {
+      const { id } = request.params;
+      const posts = await fastify.db.posts.findOne({
+        key: 'id',
+        equals: id,
+      });
+      if (!posts) throw reply.code(404);
+      return posts;
+    }
   );
 
   fastify.post(
@@ -25,7 +35,10 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
         body: createPostBodySchema,
       },
     },
-    async function (request, reply): Promise<PostEntity> {}
+    async function (request, reply): Promise<PostEntity> {
+      const body = request.body;
+      return await fastify.db.posts.create(body);
+    }
   );
 
   fastify.delete(
@@ -35,7 +48,14 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
         params: idParamSchema,
       },
     },
-    async function (request, reply): Promise<PostEntity> {}
+    async function (request, reply): Promise<PostEntity> {
+      const { id } = request.params;
+      try {
+        return await fastify.db.posts.delete(id);
+      } catch (error) {
+        throw reply.code(400);
+      }
+    }
   );
 
   fastify.patch(
@@ -46,7 +66,14 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
         params: idParamSchema,
       },
     },
-    async function (request, reply): Promise<PostEntity> {}
+    async function (request, reply): Promise<PostEntity> {
+      const { id } = request.params;
+      try {
+        return await fastify.db.posts.change(id, request.body);
+      } catch (error) {
+        throw reply.code(400);
+      }
+    }
   );
 };
 
