@@ -16,6 +16,18 @@ export default new GraphQLObjectType({
         return await fastify.db.users.findMany();
       },
     },
+    user: {
+      type: userDataType,
+      args: {
+        id: { type: GraphQLID },
+      },
+      resolve: async (_, args, fastify: FastifyInstance) => {
+        return await fastify.db.users.findOne({
+          key: 'id',
+          equals: args.id,
+        });
+      },
+    },
     profiles: {
       type: new GraphQLList(profileDataType),
       resolve: async (_, __, fastify: FastifyInstance) => {
