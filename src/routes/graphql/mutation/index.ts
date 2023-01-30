@@ -1,7 +1,20 @@
 import { FastifyInstance } from 'fastify';
-import { GraphQLObjectType } from 'graphql';
-import { memberTypeUpdateType, postCreateType, postUpdateType, profileCreateType, profileUpdateType, userCreateType, userUpdateType } from '../types/inputDataTypes';
-import { memberTypeDataType, postDataType, profileDataType, userDataType } from '../types/userDataTypes';
+import { GraphQLID, GraphQLObjectType } from 'graphql';
+import {
+  memberTypeUpdateType,
+  postCreateType,
+  postUpdateType,
+  profileCreateType,
+  profileUpdateType,
+  userCreateType,
+  userUpdateType,
+} from '../types/inputDataTypes';
+import {
+  memberTypeDataType,
+  postDataType,
+  profileDataType,
+  userDataType,
+} from '../types/userDataTypes';
 
 export default new GraphQLObjectType({
   name: 'Mutation',
@@ -25,6 +38,36 @@ export default new GraphQLObjectType({
           url: `/users/${user.id}`,
           method: 'PATCH',
           payload: user,
+        });
+        return json();
+      },
+    },
+    userSubscribedTo: {
+      type: userDataType,
+      args: {
+        id: { type: GraphQLID },
+        userId: { type: GraphQLID },
+      },
+      resolve: async (_, { id, ...restData }, fastify: FastifyInstance) => {
+        const { json } = await fastify.inject({
+          url: `/users/${id}/subscribeTo`,
+          method: 'POST',
+          payload: restData,
+        });
+        return json();
+      },
+    },
+    userUnSubscribedFrom: {
+      type: userDataType,
+      args: {
+        id: { type: GraphQLID },
+        userId: { type: GraphQLID },
+      },
+      resolve: async (_, { id, ...restData }, fastify: FastifyInstance) => {
+        const { json } = await fastify.inject({
+          url: `/users/${id}/unsubscribeFrom`,
+          method: 'POST',
+          payload: restData,
         });
         return json();
       },

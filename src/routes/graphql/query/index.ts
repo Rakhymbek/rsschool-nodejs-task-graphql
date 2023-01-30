@@ -4,20 +4,20 @@ import {
   memberTypeDataType,
   postDataType,
   profileDataType,
-  userDataType,
+  userFullDataType,
 } from '../types/userDataTypes';
 
 export default new GraphQLObjectType({
   name: 'Query',
   fields: {
     users: {
-      type: new GraphQLList(userDataType),
+      type: new GraphQLList(userFullDataType),
       resolve: async (_, __, fastify: FastifyInstance) => {
         return await fastify.db.users.findMany();
       },
     },
     user: {
-      type: userDataType,
+      type: userFullDataType,
       args: {
         id: { type: GraphQLID },
       },

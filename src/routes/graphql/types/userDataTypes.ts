@@ -1,3 +1,4 @@
+import { FastifyInstance } from 'fastify';
 import { GraphQLString, GraphQLInt } from 'graphql';
 import { GraphQLID, GraphQLList, GraphQLObjectType } from 'graphql/type';
 
@@ -6,15 +7,6 @@ export const userType = {
   lastName: { type: GraphQLString },
   email: { type: GraphQLString },
 };
-
-export const userDataType = new GraphQLObjectType({
-  name: 'User',
-  fields: {
-    id: { type: GraphQLID },
-    subscribedToUserIds: { type: new GraphQLList(GraphQLID) },
-    ...userType,
-  },
-});
 
 export const profileType = {
   avatar: { type: GraphQLString },
@@ -59,5 +51,75 @@ export const memberTypeDataType = new GraphQLObjectType({
   fields: {
     id: { type: GraphQLString },
     ...memberType,
+  },
+});
+
+export const userDataType = new GraphQLObjectType({
+  name: 'User',
+  fields: {
+    ...userType,
+    id: { type: GraphQLID },
+    subscribedToUserIds: { type: new GraphQLList(GraphQLID) },
+  },
+});
+
+export const userFullDataType = new GraphQLObjectType({
+  name: 'UserFullDataType',
+  fields: {
+    ...userType,
+    id: { type: GraphQLID },
+    subscribedToUserIds: { type: new GraphQLList(GraphQLID) },
+    profile: {
+      type: profileDataType,
+      resolve: async (user, _, fastify: FastifyInstance) => {
+        return await fastify.db.profiles.findOne({
+          key: 'userId',
+          equals: user.id,
+        });
+      },
+    },
+    posts: {
+      type: new GraphQLList(postDataType),
+      resolve: async (user, _, fastify: FastifyInstance) => {
+        return await fastify.db.posts.findMany({
+          key: 'userId',
+          equals: user.id,
+        });
+      },
+    },
+    memberType: {
+      type: memberTypeDataType,
+      resolve: async (user, _, fastify: FastifyInstance) => {
+        const profile = await fastify.db.profiles.findOne({
+          key: 'userId',
+          equals: user.id,
+        });
+
+        if (profile === null) return Promise.resolve([]);
+
+        return await fastify.db.memberTypes.findMany({
+          key: 'id',
+          equals: profile.memberTypeId,
+        });
+      },
+    },
+    userSubscribedTo: {
+      type: new GraphQLList(userDataType),
+      resolve: async (user, _, fastify: FastifyInstance) => {
+        return await fastify.db.users.findMany({
+          key: 'subscribedToUserIds',
+          inArray: user.id,
+        });
+      },
+    },
+    subscribedToUser: {
+      type: new GraphQLList(userDataType),
+      resolve: async (user, _, fastify: FastifyInstance) => {
+        return await fastify.db.users.findMany({
+          key: 'id',
+          equals: user.subscribedToUserIds,
+        });
+      },
+    },
   },
 });
